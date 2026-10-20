@@ -9,7 +9,7 @@
 //   refund    R funds an order, the releaser refunds it, settle pays R back exactly.
 //   deadline  P funds an order with the shortest deadline (one hour). Reclaim is refused before it, works after it, and a late release is refused. Settle pays P back.
 //   refused   a fund call whose amounts do not match its value is refused and keeps one wei, which accounting shows as in_flight.
-import { readFileSync, writeFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { WALLETS, clientFor, read, reader, reasonOf, send, sleep, ts } from "./lib.mjs";
 
 const Q = process.env.QUAY;
@@ -20,7 +20,9 @@ const addr = Object.fromEntries(Object.entries(NAMES).map(([k, v]) => [k, WALLET
 const GEN = 10n ** 18n;
 const gen = (w) => (Number(w) / 1e18).toFixed(6);
 
-const LOG = { run: RUN, quay: Q, started: new Date().toISOString(), events: [], results: {}, wallets: addr };
+const LOGFILE = `scripts/e2e-log-${RUN}.json`;
+const PREVLOG = process.env.RESUME && existsSync(LOGFILE) ? JSON.parse(readFileSync(LOGFILE, "utf8")) : null;
+const LOG = { run: RUN, quay: Q, started: PREVLOG?.started ?? new Date().toISOString(), events: PREVLOG?.events ?? [], results: {}, wallets: addr };
 const log = (scn, msg, extra) => {
   console.log(`[${ts()}] ${scn.padEnd(9)} ${msg}`);
   LOG.events.push({ t: new Date().toISOString(), scn, msg, ...(extra || {}) });
@@ -91,28 +93,61 @@ const now = () => Math.floor(Date.now() / 1000);
 const fund = (scn, who, id, recipients, amounts, deadline, note, valueOverride) =>
   accepted(scn, who, "fund", [id, addr.REL, recipients.map((r) => addr[r]), amounts, BigInt(deadline), note], "fund", valueOverride ?? amounts.reduce((a, b) => a + b, 0n));
 
+/** A read-back can lag a just-accepted write: poll the order until it matches before judging it. */
+const exists = async (id) => {
+  try {
+    return await order(id);
+  } catch {
+    return null;
+  }
+};
+async function orderWhen(scn, id, pred, what) {
+  for (let i = 0; i < 90; i++) {
+    const o = await exists(id);
+    if (o && pred(o)) return o;
+    await sleep(5000);
+  }
+  throw new Error(`${scn}: order ${id} never reached ${what}`);
+}
+// A run that stopped part way (a script error, never a contract one) is resumed from what is already on chain.
+const base = (k) => (process.env["BASE_" + k] ? BigInt(process.env["BASE_" + k]) : null);
+const settleHash = (scn) => PREVLOG?.events.filter((e) => e.scn === scn && e.fn === "settle" && e.exec === "FINISHED_WITH_RETURN").map((e) => e.hash)[0];
+
 async function release() {
   const scn = "release", id = `rel-${RUN}`;
-  const a0 = await balance("A"), b0 = await balance("B");
+  const a0 = base("A") ?? (await balance("A")), b0 = base("B") ?? (await balance("B"));
+  LOG.results.baselines = { ...(LOG.results.baselines || {}), A: a0.toString(), B: b0.toString() };
   const amounts = [1_500_000_000_000_000n, 500_000_000_000_000n];
-  await fund(scn, "P", id, ["A", "B"], amounts, now() + 3 * 86400, "split between two recipients");
-  const o1 = await order(id);
-  if (o1.status !== "open" || o1.payees.length !== 2) throw new Error(`${scn}: unexpected order ${JSON.stringify(o1)}`);
-  await refused(scn, "P", "release", [id], "Only the releaser");
-  await refused(scn, "P", "refund", [id], "Only the releaser");
-  await refused(scn, "REL", "settle", [id], "No outcome");
-  await accepted(scn, "REL", "release", [id], "release");
-  const o2 = await order(id);
-  if (o2.status !== "decided" || o2.outcome !== "release" || o2.legs.length !== 2 || o2.legs.some((l) => l.scheduled)) throw new Error(`${scn}: bad decision ${JSON.stringify(o2)}`);
-  if ((await balance("A")) !== a0 || (await balance("B")) !== b0) throw new Error(`${scn}: money moved at the decision`);
-  log(scn, "decision recorded, no money moved");
-  await refused(scn, "REL", "reclaim", [id], "Only the payer");
-  const s = await accepted(scn, "REL", "settle", [id], "settle");
-  await refused(scn, "REL", "settle", [id], "No outcome");
-  await finalized(scn, s.hash, "settle");
+  let o = await exists(id);
+  if (!o) {
+    await fund(scn, "P", id, ["A", "B"], amounts, now() + 3 * 86400, "split between two recipients");
+    o = await orderWhen(scn, id, (x) => x.status === "open", "open");
+  }
+  if (o.status === "open") {
+    if (o.payees.length !== 2) throw new Error(`${scn}: unexpected order ${JSON.stringify(o)}`);
+    await refused(scn, "P", "release", [id], "Only the releaser");
+    await refused(scn, "P", "refund", [id], "Only the releaser");
+    await refused(scn, "REL", "settle", [id], "No outcome");
+    await accepted(scn, "REL", "release", [id], "release");
+    o = await orderWhen(scn, id, (x) => x.outcome === "release", "decided");
+  }
+  if (o.outcome !== "release" || o.legs.length !== 2) throw new Error(`${scn}: bad decision ${JSON.stringify(o)}`);
+  if (o.status === "decided") {
+    if (o.legs.some((l) => l.scheduled)) throw new Error(`${scn}: a leg is already scheduled at the decision`);
+    if ((await balance("A")) !== a0 || (await balance("B")) !== b0) throw new Error(`${scn}: money moved at the decision`);
+    log(scn, "decision recorded, no money moved");
+    await refused(scn, "REL", "reclaim", [id], "Only the payer");
+  }
+  let sh = settleHash(scn);
+  if (o.status === "decided") {
+    const s = await accepted(scn, "REL", "settle", [id], "settle");
+    sh = s.hash;
+    await refused(scn, "REL", "settle", [id], "No outcome");
+  }
+  await finalized(scn, sh, "settle");
   const a1 = await waitBalance(scn, "A", a0 + amounts[0], "A"), b1 = await waitBalance(scn, "B", b0 + amounts[1], "B");
-  const o3 = await order(id);
-  if (o3.status !== "settled" || !o3.legs.every((l) => l.scheduled)) throw new Error(`${scn}: not settled ${JSON.stringify(o3)}`);
+  const o3 = await orderWhen(scn, id, (x) => x.status === "settled", "settled");
+  if (!o3.legs.every((l) => l.scheduled)) throw new Error(`${scn}: legs not scheduled ${JSON.stringify(o3)}`);
   log(scn, `A ${gen(a0)} -> ${gen(a1)} (+${gen(amounts[0])}), B ${gen(b0)} -> ${gen(b1)} (+${gen(amounts[1])}), exactly`);
   LOG.results.release = { id, a: [a0.toString(), a1.toString()], b: [b0.toString(), b1.toString()] };
 }
@@ -120,13 +155,21 @@ async function release() {
 async function refund() {
   const scn = "refund", id = `ref-${RUN}`;
   const amount = 2_000_000_000_000_000n;
-  await fund(scn, "R", id, ["A"], [amount], now() + 3 * 86400, "refunded by the releaser");
-  const r0 = await balance("R");
-  await accepted(scn, "REL", "refund", [id], "refund");
-  const o = await order(id);
+  let o = await exists(id);
+  if (!o) {
+    await fund(scn, "R", id, ["A"], [amount], now() + 3 * 86400, "refunded by the releaser");
+    o = await orderWhen(scn, id, (x) => x.status === "open", "open");
+  }
+  const r0 = base("R") ?? (await balance("R"));
+  LOG.results.baselines = { ...(LOG.results.baselines || {}), R: r0.toString() };
+  if (o.status === "open") {
+    await accepted(scn, "REL", "refund", [id], "refund");
+    o = await orderWhen(scn, id, (x) => x.outcome === "refund", "decided");
+  }
   if (o.outcome !== "refund" || o.legs.length !== 1 || o.legs[0].to.toLowerCase() !== addr.R.toLowerCase()) throw new Error(`${scn}: bad refund ${JSON.stringify(o)}`);
-  const s = await accepted(scn, "REL", "settle", [id], "settle");
-  await finalized(scn, s.hash, "settle");
+  let sh = settleHash(scn);
+  if (o.status === "decided") sh = (await accepted(scn, "REL", "settle", [id], "settle")).hash;
+  await finalized(scn, sh, "settle");
   const r1 = await waitBalance(scn, "R", r0 + amount, "R");
   log(scn, `payer ${gen(r0)} -> ${gen(r1)} (+${gen(amount)}), exactly; the recipient was never paid`);
   LOG.results.refund = { id, payer: [r0.toString(), r1.toString()] };
@@ -135,32 +178,46 @@ async function refund() {
 async function deadline() {
   const scn = "deadline", id = `dl-${RUN}`;
   const amount = 1_000_000_000_000_000n;
-  const dl = now() + 3720;
-  const p0 = await balance("P");
-  await fund(scn, "P", id, ["A"], [amount], dl, "reclaimed after the deadline");
-  await refused(scn, "P", "reclaim", [id], "not passed");
-  await refused(scn, "REL", "reclaim", [id], "Only the payer");
-  log(scn, `waiting for the deadline (${new Date(dl * 1000).toISOString()})`);
-  while (now() < dl + 90) await sleep(30000);
-  await refused(scn, "REL", "reclaim", [id], "Only the payer");
-  await accepted(scn, "P", "reclaim", [id], "reclaim");
-  const o = await order(id);
+  const p0 = base("P") ?? (await balance("P"));
+  let o = await exists(id);
+  let dl;
+  if (!o) {
+    dl = now() + 3720;
+    await fund(scn, "P", id, ["A"], [amount], dl, "reclaimed after the deadline");
+    o = await orderWhen(scn, id, (x) => x.status === "open", "open");
+  }
+  dl = Number(o.deadline);
+  if (o.status === "open") {
+    await refused(scn, "P", "reclaim", [id], "not passed");
+    await refused(scn, "REL", "reclaim", [id], "Only the payer");
+    log(scn, `waiting for the deadline (${new Date(dl * 1000).toISOString()})`);
+    while (now() < dl + 90) await sleep(30000);
+    await refused(scn, "REL", "reclaim", [id], "Only the payer");
+    await accepted(scn, "P", "reclaim", [id], "reclaim");
+    o = await orderWhen(scn, id, (x) => x.reason === "deadline", "reclaimed");
+  }
   if (o.outcome !== "refund" || o.reason !== "deadline") throw new Error(`${scn}: bad reclaim ${JSON.stringify(o)}`);
-  await refused(scn, "REL", "release", [id], "Not open");
-  const s = await accepted(scn, "REL", "settle", [id], "settle");
-  await finalized(scn, s.hash, "settle");
+  let sh = settleHash(scn);
+  if (o.status === "decided") {
+    await refused(scn, "REL", "release", [id], "Not open");
+    sh = (await accepted(scn, "REL", "settle", [id], "settle")).hash;
+  }
+  await finalized(scn, sh, "settle");
   const p1 = await balance("P");
   log(scn, `payer ${gen(p0)} -> ${gen(p1)} (the order's ${gen(amount)} came back; the difference to a perfect round trip is the payer's own gas and its other orders)`);
   LOG.results.deadline = { id, payer: [p0.toString(), p1.toString()] };
 }
 
 async function refusedPayable() {
-  const scn = "refused";
+  const scn = "refused", id = `bad-${RUN}`;
+  if (PREVLOG && PREVLOG.events.some((e) => e.scn === scn && e.fn === "fund")) return log(scn, "already done in the stopped run (resumed)");
   const before = await read(Q, "get_accounting", []);
-  const r = await tx(scn, "P", "fund", [`bad-${RUN}`, addr.REL, [addr.A], [2n], BigInt(now() + 86400), "amounts do not match the value"], "fund (value 1, amounts 2)", 1n);
+  const r = await tx(scn, "P", "fund", [id, addr.REL, [addr.A], [2n], BigInt(now() + 86400), "amounts do not match the value"], "fund (value 1, amounts 2)", 1n);
   if (ok(r)) throw new Error(`${scn}: the mismatched fund was accepted`);
+  if (await exists(id)) throw new Error(`${scn}: the refused order exists`);
   const after = await read(Q, "get_accounting", []);
-  log(scn, `refused as it must be; in_flight ${before.in_flight} -> ${after.in_flight} (the refused call kept its wei)`, { before, after });
+  if (after.total_received !== before.total_received) throw new Error(`${scn}: a refused call was counted as received`);
+  log(scn, "refused as it must be: no order exists and nothing was counted as received; the wei it carried stays in the contract and the final accounting shows it as in_flight");
   LOG.results.refused = { before, after };
 }
 

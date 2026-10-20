@@ -1,0 +1,401 @@
+{
+ "run": "v1",
+ "quay": "0xEdB92e9b9E177503602655da2a30b3ba2BF8F52c",
+ "started": "2026-10-20T02:02:00.129Z",
+ "events": [
+  {
+   "t": "2026-10-20T02:02:00.698Z",
+   "scn": "setup",
+   "msg": "quay 0xEdB92e9b9E177503602655da2a30b3ba2BF8F52c; payer balance 4.874692"
+  },
+  {
+   "t": "2026-10-20T02:02:13.562Z",
+   "scn": "refund",
+   "msg": "fund 0xad8fdf75ea ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "fund",
+   "hash": "0xad8fdf75ea54009d1d6a0b17f76e189bc01088bdc3f39371e78bc531fc77ae62",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:02:23.665Z",
+   "scn": "deadline",
+   "msg": "fund 0x3a8d2d0664 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "fund",
+   "hash": "0x3a8d2d06642a2deb1e633f889169e6d6d9c5940e5e19d79a77350ac5ff80bfe6",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:02:37.032Z",
+   "scn": "refund",
+   "msg": "refund 0x43f5043cc7 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "refund",
+   "hash": "0x43f5043cc71be7e9a44205f49a56bbbb5306baae0302890b8601c1ca38853761",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:02:50.888Z",
+   "scn": "refund",
+   "msg": "settle 0x648f7188d0 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "settle",
+   "hash": "0x648f7188d0068758c344c598931e17960d8e33eb7131f5779d9481e25a56fcd3",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:03:00.958Z",
+   "scn": "release",
+   "msg": "fund 0x7262bfee0a ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "fund",
+   "hash": "0x7262bfee0a7ba40512dc7c9672ef6697374730fe9831cfc21f4f08df6d7c513e",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:04:02.700Z",
+   "scn": "refused",
+   "msg": "fund (value 1, amounts 2) 0x89947c33ea ACCEPTED exec=FINISHED_WITH_ERROR",
+   "fn": "fund",
+   "hash": "0x89947c33ea1d18adaa88330793b2f054254ae1dca18067a658e52c0029ae3d5b",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:04:04.362Z",
+   "scn": "refused",
+   "msg": "refused as it must be; in_flight 0 -> 2000000000000001 (the refused call kept its wei)",
+   "before": {
+    "balance": 0,
+    "in_flight": 0,
+    "shortfall": 0,
+    "total_received": 0,
+    "total_scheduled": 0,
+    "unscheduled": 0
+   },
+   "after": {
+    "balance": 5000000000000001,
+    "in_flight": 2000000000000001,
+    "shortfall": 0,
+    "total_received": 5000000000000000,
+    "total_scheduled": 2000000000000000,
+    "unscheduled": 3000000000000000
+   }
+  },
+  {
+   "t": "2026-10-20T02:04:15.028Z",
+   "scn": "deadline",
+   "msg": "reclaim (refused) 0x707f17192b ACCEPTED exec=FINISHED_WITH_ERROR",
+   "fn": "reclaim",
+   "hash": "0x707f17192b4338ae9dedb4814fad31e029ddbdeee9649b001c9d1d6415c657e4",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:04:15.028Z",
+   "scn": "deadline",
+   "msg": "reclaim refused: \"The deadline has not passed yet\"",
+   "reason": "The deadline has not passed yet"
+  },
+  {
+   "t": "2026-10-20T02:04:27.868Z",
+   "scn": "release",
+   "msg": "release (refused) 0xace73fec41 ACCEPTED exec=FINISHED_WITH_ERROR",
+   "fn": "release",
+   "hash": "0xace73fec4144c30e2015f5b8662f2af77354c23dfadb764c30f0a3d7117438b6",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:04:27.868Z",
+   "scn": "release",
+   "msg": "release refused: \"Only the releaser can release\"",
+   "reason": "Only the releaser can release"
+  },
+  {
+   "t": "2026-10-20T02:04:52.591Z",
+   "scn": "deadline",
+   "msg": "reclaim (refused) 0x40c12df213 ACCEPTED exec=FINISHED_WITH_ERROR",
+   "fn": "reclaim",
+   "hash": "0x40c12df21359e5f1c5694b0d6440a8634a564d90b4d00e85b75f877e580468f0",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:04:52.591Z",
+   "scn": "deadline",
+   "msg": "reclaim refused: \"Only the payer can reclaim\"",
+   "reason": "Only the payer can reclaim"
+  },
+  {
+   "t": "2026-10-20T02:04:52.591Z",
+   "scn": "deadline",
+   "msg": "waiting for the deadline (2026-10-20T03:04:00.000Z)"
+  },
+  {
+   "t": "2026-10-20T02:05:03.578Z",
+   "scn": "release",
+   "msg": "refund (refused) 0x2c78468388 ACCEPTED exec=FINISHED_WITH_ERROR",
+   "fn": "refund",
+   "hash": "0x2c7846838873b901ea34caca8e9c44973b0e3645a15d49e585ef90494996c2b9",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:05:03.578Z",
+   "scn": "release",
+   "msg": "refund refused: \"Only the releaser can refund\"",
+   "reason": "Only the releaser can refund"
+  },
+  {
+   "t": "2026-10-20T02:05:41.555Z",
+   "scn": "release",
+   "msg": "settle (refused) 0x5a716622e8 ACCEPTED exec=FINISHED_WITH_ERROR",
+   "fn": "settle",
+   "hash": "0x5a716622e82972169096b17745717a9aacb34c9a50c180357bcf8a008393baa5",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:05:41.555Z",
+   "scn": "release",
+   "msg": "settle refused: \"No outcome to settle (status: open)\"",
+   "reason": "No outcome to settle (status: open)"
+  },
+  {
+   "t": "2026-10-20T02:06:05.534Z",
+   "scn": "release",
+   "msg": "release 0x6794fe582c ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "release",
+   "hash": "0x6794fe582c2bb7bbd66ab1681c0069b341e65080ab6da52f39a8711f56eb0d6f",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:08:28.871Z",
+   "scn": "setup",
+   "msg": "quay 0xEdB92e9b9E177503602655da2a30b3ba2BF8F52c; payer balance 4.870151"
+  },
+  {
+   "t": "2026-10-20T02:08:28.879Z",
+   "scn": "refused",
+   "msg": "already done in the stopped run (resumed)"
+  },
+  {
+   "t": "2026-10-20T02:08:30.699Z",
+   "scn": "release",
+   "msg": "decision recorded, no money moved"
+  },
+  {
+   "t": "2026-10-20T02:08:44.505Z",
+   "scn": "deadline",
+   "msg": "reclaim (refused) 0x8ca9b8ee46 ACCEPTED exec=FINISHED_WITH_ERROR",
+   "fn": "reclaim",
+   "hash": "0x8ca9b8ee46aa4d53f7f4ba33db77fd15813a1846a392adb58125845448ac9601",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:08:44.505Z",
+   "scn": "deadline",
+   "msg": "reclaim refused: \"The deadline has not passed yet\"",
+   "reason": "The deadline has not passed yet"
+  },
+  {
+   "t": "2026-10-20T02:08:54.328Z",
+   "scn": "release",
+   "msg": "reclaim (refused) 0x419c2bb057 ACCEPTED exec=FINISHED_WITH_ERROR",
+   "fn": "reclaim",
+   "hash": "0x419c2bb057a3b14bc6c64f0391352e47f86e1096e02131f9dbb5d6660368bbe9",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:08:54.328Z",
+   "scn": "release",
+   "msg": "reclaim refused: \"Only the payer can reclaim\"",
+   "reason": "Only the payer can reclaim"
+  },
+  {
+   "t": "2026-10-20T02:09:19.439Z",
+   "scn": "deadline",
+   "msg": "reclaim (refused) 0x265185c9e6 ACCEPTED exec=FINISHED_WITH_ERROR",
+   "fn": "reclaim",
+   "hash": "0x265185c9e6f9bf5617a3fb1d9f9937c15bb672f04f5a8067ea4de293cafdbd2e",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:09:19.439Z",
+   "scn": "deadline",
+   "msg": "reclaim refused: \"Only the payer can reclaim\"",
+   "reason": "Only the payer can reclaim"
+  },
+  {
+   "t": "2026-10-20T02:09:19.440Z",
+   "scn": "deadline",
+   "msg": "waiting for the deadline (2026-10-20T03:04:00.000Z)"
+  },
+  {
+   "t": "2026-10-20T02:09:32.324Z",
+   "scn": "release",
+   "msg": "settle 0xce0514db1a ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "settle",
+   "hash": "0xce0514db1a02c7a62ac7048b1adaf560e2ae24c4035b65e04a436feb1bb3f498",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:10:10.442Z",
+   "scn": "release",
+   "msg": "settle (refused) 0x51f87fcd75 ACCEPTED exec=FINISHED_WITH_ERROR",
+   "fn": "settle",
+   "hash": "0x51f87fcd752aa81fe5678112e911e72499a1d9eaed7e50fc76d78e18499ff5c2",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T02:10:10.442Z",
+   "scn": "release",
+   "msg": "settle refused: \"No outcome to settle (status: settled)\"",
+   "reason": "No outcome to settle (status: settled)"
+  },
+  {
+   "t": "2026-10-20T02:32:53.859Z",
+   "scn": "refund",
+   "msg": "settle FINALIZED 24.4 min after the wait began"
+  },
+  {
+   "t": "2026-10-20T02:32:54.171Z",
+   "scn": "refund",
+   "msg": "payer 0.149973 -> 0.151973 (+0.002000), exactly; the recipient was never paid"
+  },
+  {
+   "t": "2026-10-20T02:40:09.868Z",
+   "scn": "release",
+   "msg": "settle FINALIZED 30.0 min after the wait began"
+  },
+  {
+   "t": "2026-10-20T02:40:12.053Z",
+   "scn": "release",
+   "msg": "A 4.671683 -> 4.673183 (+0.001500), B 0.144572 -> 0.145072 (+0.000500), exactly"
+  },
+  {
+   "t": "2026-10-20T03:06:05.811Z",
+   "scn": "deadline",
+   "msg": "reclaim (refused) 0x349424e50e ACCEPTED exec=FINISHED_WITH_ERROR",
+   "fn": "reclaim",
+   "hash": "0x349424e50e9b673a63b0fc01331fc062342733b5e0acab942150402910a3fa59",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T03:06:05.812Z",
+   "scn": "deadline",
+   "msg": "reclaim refused: \"Only the payer can reclaim\"",
+   "reason": "Only the payer can reclaim"
+  },
+  {
+   "t": "2026-10-20T03:06:29.531Z",
+   "scn": "deadline",
+   "msg": "reclaim 0x8d90e0004e ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "reclaim",
+   "hash": "0x8d90e0004e86f2aabdf20b42bd9016f2e0ddff2089b02f5cef846fec105d3cf8",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T03:06:45.506Z",
+   "scn": "deadline",
+   "msg": "release (refused) 0x3eac0b5b8a ACCEPTED exec=FINISHED_WITH_ERROR",
+   "fn": "release",
+   "hash": "0x3eac0b5b8a4c0d9fe58468fd61cf2d509d0e8903315264ff9ef982d36b752c31",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T03:06:45.506Z",
+   "scn": "deadline",
+   "msg": "release refused: \"Not open (status: decided)\"",
+   "reason": "Not open (status: decided)"
+  },
+  {
+   "t": "2026-10-20T03:07:09.195Z",
+   "scn": "deadline",
+   "msg": "settle 0xec19668a2c ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "settle",
+   "hash": "0xec19668a2c23f95ff57a3490edd9e6b225284949017450dadacc50681c97f4ee",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-20T03:37:07.374Z",
+   "scn": "deadline",
+   "msg": "settle FINALIZED 30.0 min after the wait began"
+  },
+  {
+   "t": "2026-10-20T03:37:07.645Z",
+   "scn": "deadline",
+   "msg": "payer 4.870151 -> 4.870066 (the order's 0.001000 came back; the difference to a perfect round trip is the payer's own gas and its other orders)"
+  },
+  {
+   "t": "2026-10-20T03:37:10.618Z",
+   "scn": "accounting",
+   "msg": "{\"balance\":1,\"in_flight\":1,\"shortfall\":0,\"total_received\":5000000000000000,\"total_scheduled\":5000000000000000,\"unscheduled\":0}"
+  },
+  {
+   "t": "2026-10-20T03:37:10.618Z",
+   "scn": "accounting",
+   "msg": "closed: received 5000000000000000 = scheduled 5000000000000000; nothing short, nothing owed; only 1 wei kept from refused calls"
+  }
+ ],
+ "results": {
+  "baselines": {
+   "A": "4671682894416963300",
+   "B": "144572439515292850",
+   "R": "149972630822255600"
+  },
+  "refund": {
+   "id": "ref-v1",
+   "payer": [
+    "149972630822255600",
+    "151972630822255600"
+   ]
+  },
+  "release": {
+   "id": "rel-v1",
+   "a": [
+    "4671682894416963300",
+    "4673182894416963300"
+   ],
+   "b": [
+    "144572439515292850",
+    "145072439515292850"
+   ]
+  },
+  "deadline": {
+   "id": "dl-v1",
+   "payer": [
+    "4870151161779521345",
+    "4870066007762776695"
+   ]
+  },
+  "accounting": {
+   "balance": 1,
+   "in_flight": 1,
+   "shortfall": 0,
+   "total_received": 5000000000000000,
+   "total_scheduled": 5000000000000000,
+   "unscheduled": 0
+  }
+ },
+ "wallets": {
+  "P": "0x3E19dD3b48e6273bC1fFcBDc23206d90eEcA59e8",
+  "REL": "0xe450227564966063Fdd9F4C73556BcE3c673ec76",
+  "A": "0xcC8cB88f4732c52c8632fd28FA7EC725E816FdAe",
+  "B": "0x478cbc49a10754651D48f84AF4A54975EEBa4873",
+  "R": "0x18696aDD89679C6954FC67c81870802cd3246aFA"
+ },
+ "finished": "2026-10-20T03:37:10.618Z"
+}
