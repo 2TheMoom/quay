@@ -1,0 +1,8 @@
+{
+  "name": "quay",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "genlayer-js": "^1.1.8"
+  }
+}
