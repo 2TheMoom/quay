@@ -430,10 +430,20 @@ def test_removed_entry_points_stay_removed(Q):
         assert not hasattr(c, name)
 
 
-def test_the_contract_has_no_model_and_no_nondeterministic_block():
+def test_the_only_nondeterministic_step_is_the_validated_page_read_and_only_observe_uses_it():
     src = open(CONTRACT, encoding="utf-8").read()
-    for forbidden in ("nondet", "exec_prompt", "web.render", "web.get", "run_nondet", "get_contract_at", "random"):
+    for forbidden in ("exec_prompt", "web.render", "web.get", "get_contract_at", "random"):
         assert forbidden not in src
+    assert src.count("run_nondet_unsafe") == 1 and src.count("gl.nondet.web.request") == 1
+    look = src.split("def _look", 1)[1].split("class Order", 1)[0].split("@allow_storage", 1)[0]
+    assert "run_nondet_unsafe" in look and "validator_fn" in look
+    assert src.count("_look(") == 2  # the definition and the single call
+    observe = src.split("def observe", 1)[1].split("@gl.public.write", 1)[0]
+    assert "_look(" in observe
+    # nothing that decides or pays reads the world
+    for name in ("release", "refund", "reclaim", "settle", "_decide", "_pay", "_fund"):
+        body = src.split(f"def {name}(", 1)[1].split("\n    @gl.public", 1)[0].split("\n\n\ndef ", 1)[0]
+        assert "_look(" not in body and "nondet" not in body
 
 
 def test_exactly_one_transfer_call_exists_and_only_in_settle():

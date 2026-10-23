@@ -1,0 +1,4 @@
+network: studionet (chain id 61999)
+IDENTICAL  Quay v2 (contracts/quay.py)  0x1678e8C242AB557ACF772e17aE715EC80Eac1d39
+           on chain sha256 5cb0b97fc5015e3c0338d56178fa044d41a537b1f9b8feac848d183d954eebdd  (15696 chars)
+           in repo  sha256 5cb0b97fc5015e3c0338d56178fa044d41a537b1f9b8feac848d183d954eebdd  (15696 chars)

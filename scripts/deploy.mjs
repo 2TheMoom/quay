@@ -1,7 +1,8 @@
-// Deploys one contract to Bradbury with a test wallet kept outside the repo. Constructor args are a JSON array so numbers stay numbers.
+// Deploys one contract to Bradbury (or Studionet with NETWORK=studionet) with a test wallet kept outside the repo. Constructor args are a JSON array so numbers stay numbers.
 //   node scripts/deploy.mjs contracts/quay.py
 import { readFileSync } from "fs";
-import { clientFor } from "./lib.mjs";
+import { clientFor, execName, statusName } from "./lib.mjs";
+import { NETWORK } from "./network.mjs";
 
 const [file, argsJson] = process.argv.slice(2);
 if (!file) {
@@ -11,9 +12,9 @@ if (!file) {
 const args = argsJson ? JSON.parse(argsJson).map((a) => (typeof a === "number" ? BigInt(a) : a)) : [];
 const client = clientFor("gl-test-1");
 const code = new Uint8Array(readFileSync(file));
-console.log(`deploying ${file} (${code.length} bytes) args=${JSON.stringify(args, (_, v) => (typeof v === "bigint" ? v.toString() : v))}`);
+console.log(`deploying ${file} (${code.length} bytes) to ${NETWORK} args=${JSON.stringify(args, (_, v) => (typeof v === "bigint" ? v.toString() : v))}`);
 const hash = await client.deployContract({ code, args });
 console.log("tx", hash);
 const receipt = await client.waitForTransactionReceipt({ hash, status: "ACCEPTED", retries: 200, interval: 5000 });
-console.log("exec", receipt.txExecutionResultName);
+console.log("status", statusName(receipt), "exec", execName(receipt));
 console.log("ADDRESS", receipt.txDataDecoded?.contractAddress ?? receipt.data?.contract_address);

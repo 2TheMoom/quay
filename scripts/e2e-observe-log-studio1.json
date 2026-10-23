@@ -1,0 +1,342 @@
+{
+ "run": "studio1",
+ "network": "studionet",
+ "quay": "0x1678e8C242AB557ACF772e17aE715EC80Eac1d39",
+ "started": "2026-10-23T05:13:54.587Z",
+ "events": [
+  {
+   "t": "2026-10-23T05:13:56.875Z",
+   "scn": "setup",
+   "msg": "quay 0x1678e8C242AB557ACF772e17aE715EC80Eac1d39 on studionet; payer P 219.996000 GEN"
+  },
+  {
+   "t": "2026-10-23T05:14:09.526Z",
+   "scn": "unreadable",
+   "msg": "fund_watched 0xac50f65934 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "fund_watched",
+   "hash": "0xac50f65934b27af4ec8915baeb0f279949eaa32f7559931f510b3b12864cb7a9",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:14:10.156Z",
+   "scn": "unmet",
+   "msg": "fund_watched 0x19ea3b6d73 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "fund_watched",
+   "hash": "0x19ea3b6d738cd8760c26187f09f98ba1e7b208418507b542a079910165c7304a",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:14:22.506Z",
+   "scn": "deadline",
+   "msg": "fund_watched 0x7323be94ee ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "fund_watched",
+   "hash": "0x7323be94ee76e16559c9ebe844fc219d8e2a3c40c301585638c672f140e99601",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:14:23.781Z",
+   "scn": "deadline",
+   "msg": "funded with the shortest deadline; the page matches but nobody observes. Waiting for the deadline (06:14:56 UTC)"
+  },
+  {
+   "t": "2026-10-23T05:14:35.665Z",
+   "scn": "digest",
+   "msg": "fund_watched 0x35c1923d36 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "fund_watched",
+   "hash": "0x35c1923d362bb61181c2b3e00a36d151fb9b95b9c5decd2f26d993152a334664",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:14:38.224Z",
+   "scn": "digest",
+   "msg": "watch stored: sha256 of https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-1.7.1.tar.gz"
+  },
+  {
+   "t": "2026-10-23T05:14:48.190Z",
+   "scn": "flip",
+   "msg": "fund_watched 0x772e41aab2 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "fund_watched",
+   "hash": "0x772e41aab2831f1d9d9233a5e1729518975a9c50d268f4dc31ece98c141c75d3",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:15:00.969Z",
+   "scn": "unreadable",
+   "msg": "observe 0xa00cb584e8 refused: \"Page unreadable, nothing recorded. Try again shortly.\"",
+   "fn": "observe",
+   "hash": "0xa00cb584e84808a7ace0dd20808f06cf5d0fa5e43b3042cc224f745207b952e8",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED",
+   "refused": true,
+   "reason": "Page unreadable, nothing recorded. Try again shortly."
+  },
+  {
+   "t": "2026-10-23T05:15:02.241Z",
+   "scn": "unreadable",
+   "msg": "an unreadable page records nothing: observations 0, the order stays open"
+  },
+  {
+   "t": "2026-10-23T05:15:14.296Z",
+   "scn": "unmet",
+   "msg": "observe 0xa007f58509 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "observe",
+   "hash": "0xa007f58509dd730771045330484ca36c97eab441638630ca6d27d1ea2cb59664",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:15:16.947Z",
+   "scn": "unmet",
+   "msg": "the validators read the page and agreed the condition is not met: the order stays open, observations 1"
+  },
+  {
+   "t": "2026-10-23T05:15:25.241Z",
+   "scn": "unreadable",
+   "msg": "refund (so nothing stays locked) 0xe60a776a6c ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "refund",
+   "hash": "0xe60a776a6cf93ec1d8ecddf7fe6355e58adae3f55d275321418dcce8939bf8b7",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:15:27.082Z",
+   "scn": "digest",
+   "msg": "observe (anyone) 0xf3c9de3858 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "observe",
+   "hash": "0xf3c9de3858fcd3fd511c26e526155383aa5bd9cf1189ccb49a7459e21249f147",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:15:29.640Z",
+   "scn": "digest",
+   "msg": "decided: release (observed) after 1 observation; legs 0.001500 + 0.000500 GEN"
+  },
+  {
+   "t": "2026-10-23T05:15:30.156Z",
+   "scn": "digest",
+   "msg": "no money moved at the decision"
+  },
+  {
+   "t": "2026-10-23T05:15:39.598Z",
+   "scn": "flip",
+   "msg": "observe while the page says pending 0xd7fa5edfef ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "observe",
+   "hash": "0xd7fa5edfef4135fd7429e95b51d42c59a07192d824083f0594d6bf8ed84a4187",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:15:42.126Z",
+   "scn": "flip",
+   "msg": "the page said pending: the order stays open. Waiting for docs/watch-demo.json on main to say \"delivered\" ..."
+  },
+  {
+   "t": "2026-10-23T05:15:52.103Z",
+   "scn": "unmet",
+   "msg": "observe again at once 0x92a9a29a37 refused: \"Observed too recently, try again later\"",
+   "fn": "observe",
+   "hash": "0x92a9a29a37f8699e85d797a61b582194992ade8a27035accd728a110321e415e",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED",
+   "refused": true,
+   "reason": "Observed too recently, try again later"
+  },
+  {
+   "t": "2026-10-23T05:16:04.300Z",
+   "scn": "unreadable",
+   "msg": "settle 0x6097266614 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "settle",
+   "hash": "0x60972666143e75035f8addb91beae5874f7683cfe44437c81e8e0c0924f76cda",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:16:04.802Z",
+   "scn": "unmet",
+   "msg": "refund (the named releaser) 0x9d3f04b93b ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "refund",
+   "hash": "0x9d3f04b93b46f13d117d70d8e7dabcc6c3cfca8e8a6b2934dae61641fbe25553",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:16:16.485Z",
+   "scn": "digest",
+   "msg": "observe again 0x3afbfaf4f3 refused: \"Not open (status: decided)\"",
+   "fn": "observe",
+   "hash": "0x3afbfaf4f39b3f290cbab685ef467dd8d1f298494c72e510b6bab49633ff3da9",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED",
+   "refused": true,
+   "reason": "Not open (status: decided)"
+  },
+  {
+   "t": "2026-10-23T05:16:28.722Z",
+   "scn": "unmet",
+   "msg": "settle 0x3388d3a860 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "settle",
+   "hash": "0x3388d3a860489f23266a3692f1b3c39e72ebf69c9e33beed6a20b9b67b92647f",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:16:40.860Z",
+   "scn": "digest",
+   "msg": "settle 0x9ade026adc ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "settle",
+   "hash": "0x9ade026adc08e80c3618c50ed4b9bb66829c08beae2748ff91071db2c83c9fd8",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:16:55.656Z",
+   "scn": "unmet",
+   "msg": "R (the payer) received exactly 120.000000 GEN in total (balance now 120.000000)"
+  },
+  {
+   "t": "2026-10-23T05:17:08.203Z",
+   "scn": "digest",
+   "msg": "A received exactly 220.001500 GEN in total (balance now 220.001500)"
+  },
+  {
+   "t": "2026-10-23T05:17:08.463Z",
+   "scn": "digest",
+   "msg": "B received exactly 120.000500 GEN in total (balance now 120.000500)"
+  },
+  {
+   "t": "2026-10-23T05:17:20.859Z",
+   "scn": "digest",
+   "msg": "settle again 0x0b12bba1e1 refused: \"No outcome to settle (status: settled)\"",
+   "fn": "settle",
+   "hash": "0x0b12bba1e192f0c5fb3446d8425d5b87f5a63678589fe1c6897614d766585810",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED",
+   "refused": true,
+   "reason": "No outcome to settle (status: settled)"
+  },
+  {
+   "t": "2026-10-23T05:20:47.252Z",
+   "scn": "flip",
+   "msg": "the page now says delivered (as served by raw.githubusercontent.com)"
+  },
+  {
+   "t": "2026-10-23T05:20:47.252Z",
+   "scn": "flip",
+   "msg": "waiting 1s for the observation cooldown"
+  },
+  {
+   "t": "2026-10-23T05:21:00.719Z",
+   "scn": "flip",
+   "msg": "observe #2 after the change 0x9f8b1c80c1 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "observe",
+   "hash": "0x9f8b1c80c127faf04e90bd9d53582c862c4ad8c97cf489cbefc9858dc7a6faa4",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T05:21:03.285Z",
+   "scn": "flip",
+   "msg": "decided: release (observed) after 2 observations"
+  },
+  {
+   "t": "2026-10-23T05:21:15.578Z",
+   "scn": "flip",
+   "msg": "settle 0x34be5c2958 ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "settle",
+   "hash": "0x34be5c2958a14b5c0f68bf0058156d9d8747231c0e9270916c3a42ea6bd9adfb",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T06:15:24.650Z",
+   "scn": "deadline",
+   "msg": "observe after the deadline 0xb99a07985a refused: \"The deadline has passed\"",
+   "fn": "observe",
+   "hash": "0xb99a07985a3937c7b18532fb56c0dcbb0c5b8252346d5e12c40a485307c206dd",
+   "exec": "FINISHED_WITH_ERROR",
+   "status": "ACCEPTED",
+   "refused": true,
+   "reason": "The deadline has passed"
+  },
+  {
+   "t": "2026-10-23T06:15:36.690Z",
+   "scn": "deadline",
+   "msg": "reclaim (the payer) 0x607bf8326d ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "reclaim",
+   "hash": "0x607bf8326d4e8216d3d42e972557d3c9638cfa0abdf125804546028793eb24b4",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T06:15:52.395Z",
+   "scn": "deadline",
+   "msg": "settle 0xd50b17dcfe ACCEPTED exec=FINISHED_WITH_RETURN",
+   "fn": "settle",
+   "hash": "0xd50b17dcfecd89cd6460662ae9ce3243a2e7e33e6d6ca86a663fe94afa7fd8b4",
+   "exec": "FINISHED_WITH_RETURN",
+   "status": "ACCEPTED"
+  },
+  {
+   "t": "2026-10-23T06:15:53.647Z",
+   "scn": "deadline",
+   "msg": "the payer was refunded: observe after the deadline is refused, reclaim works"
+  },
+  {
+   "t": "2026-10-23T06:15:53.647Z",
+   "scn": "flip",
+   "msg": "FAILED: flip: A balance to reach 220000300000000000000 did not come true"
+  },
+  {
+   "t": "2026-10-23T06:15:54.904Z",
+   "scn": "accounting",
+   "msg": "received 4700000000000000, scheduled 4700000000000000, unscheduled 0, in_flight 100000000000000, shortfall 0"
+  }
+ ],
+ "results": {
+  "unreadable": {
+   "id": "ur-studio1",
+   "observations": 0
+  },
+  "unmet": {
+   "id": "un-studio1",
+   "observations": 1,
+   "final": "refunded by the named releaser",
+   "payer_refunded": "2000000000000000"
+  },
+  "digest": {
+   "id": "dg-studio1",
+   "outcome": "release",
+   "reason": "observed",
+   "observations": 1,
+   "a_received": "1500000000000000",
+   "b_received": "500000000000000"
+  },
+  "deadline": {
+   "id": "dl-studio1",
+   "outcome": "refund",
+   "reason": "deadline"
+  }
+ },
+ "wallets": {
+  "P": "0x3E19dD3b48e6273bC1fFcBDc23206d90eEcA59e8",
+  "REL": "0xe450227564966063Fdd9F4C73556BcE3c673ec76",
+  "A": "0xcC8cB88f4732c52c8632fd28FA7EC725E816FdAe",
+  "B": "0x478cbc49a10754651D48f84AF4A54975EEBa4873",
+  "R": "0x18696aDD89679C6954FC67c81870802cd3246aFA"
+ },
+ "accounting": {
+  "balance": 100000000000000,
+  "in_flight": 100000000000000,
+  "shortfall": 0,
+  "total_received": 4700000000000000,
+  "total_scheduled": 4700000000000000,
+  "unscheduled": 0
+ },
+ "finished": "2026-10-23T06:15:54.904Z"
+}

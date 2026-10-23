@@ -2,11 +2,16 @@
 
 A payout rail for GenLayer that pays each recipient exactly once. Someone funds an order and names a releaser. The releaser decides: pay the recipients, or pay the funder back. Anyone then settles, and every leg is paid once, in a transaction of its own. The releaser can be a person, a multisig, or another Intelligent Contract that does the judging (an arbiter, a verifier-backed escrow).
 
-Live on **GenLayer Bradbury Testnet** (chain 4221). One contract, no owner, no admin, no setter, no upgrade. How it works, what it refuses to do and the threats considered are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+**Version 2 adds an order the world can release.** An order can be funded with a watch: a public page and a condition on it (the file's SHA-256, or one JSON field reading a given value). Anyone can then call `observe`. The validators each fetch the page on their own and must agree on whether the condition holds, and only then is the order decided as a release. Payment is still a separate `settle`, and the named releaser and the deadline refund still work. See [Watched orders](#watched-orders-version-2).
 
-| Contract | Address |
-|---|---|
-| Quay | [`0xEdB92e9b9E177503602655da2a30b3ba2BF8F52c`](https://explorer-bradbury.genlayer.com/address/0xEdB92e9b9E177503602655da2a30b3ba2BF8F52c) |
+One contract, no owner, no admin, no setter, no upgrade. How it works, what it refuses to do and the threats considered are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+| Contract | Network | Address |
+|---|---|---|
+| Quay v2 (the contract in this repo) | GenLayer Studionet (chain 61999) | [`0x1678e8C242AB557ACF772e17aE715EC80Eac1d39`](https://explorer-studio.genlayer.com/address/0x1678e8C242AB557ACF772e17aE715EC80Eac1d39) |
+| Quay v1 (no watch; its source is commit `af82e9e`) | GenLayer Bradbury Testnet (chain 4221) | [`0xEdB92e9b9E177503602655da2a30b3ba2BF8F52c`](https://explorer-bradbury.genlayer.com/address/0xEdB92e9b9E177503602655da2a30b3ba2BF8F52c) |
+
+The v2 contract is the v1 contract plus the watch (`fund_watched`, `observe`); nothing about `fund`, `release`, `refund`, `reclaim` or `settle` changed. The v1 live evidence further down is kept as it was.
 
 ## Why it exists
 
@@ -26,6 +31,9 @@ release(order_id)    releaser only, while open: records "pay the recipients"
 refund(order_id)     releaser only, while open: records "pay the funder back"
 reclaim(order_id)    funder only, after the deadline, while still open: records the same refund
 settle(order_id)     anyone, once decided: pays every leg, once
+fund_watched(order_id, releaser, recipients, amounts, deadline, note, watch_url, watch_kind, watch_path, watch_value)
+                     payable; fund plus a watch fixed now (version 2)
+observe(order_id)    anyone, while open and before the deadline: the validators read the watched page and agree; if the condition holds the order is decided as a release
 get_order(order_id)  get_order_ids(offset, limit)  get_count()  get_accounting()
 ```
 
@@ -42,6 +50,26 @@ await anyone.writeContract({ address: QUAY, functionName: "settle", args: ["job-
 ```
 
 Rules that are checked before anything changes: the order id is 1 to 64 characters from `a-z A-Z 0-9 . _ -` and unused, between 1 and 10 recipients, every amount a plain whole number above zero, the amounts add up to exactly the value sent, every address is real and neither a recipient nor the releaser is Quay itself, and the deadline is at least an hour ahead and within two years.
+
+## Watched orders (version 2)
+
+```js
+// pay A and B when the jq 1.7.1 tarball matches its published digest
+await payer.writeContract({
+  address: QUAY, functionName: "fund_watched", value: 2_000_000_000_000_000n,
+  args: ["jq-bounty", RELEASER, [ALICE, BOB], [1_500_000_000_000_000n, 500_000_000_000_000n], BigInt(deadlineSeconds), "pay on a verified release",
+         "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-1.7.1.tar.gz", "sha256", "", "478c9ca129fd2e3443fe27314b455e211e0d8c60bc8ff7df703873deeee580c2"],
+});
+// anyone, later
+await anyone.writeContract({ address: QUAY, functionName: "observe", args: ["jq-bounty"] });   // the validators read the page and agree
+await anyone.writeContract({ address: QUAY, functionName: "settle", args: ["jq-bounty"] });    // now pay, in its own transaction
+```
+
+- `watch_kind` is `sha256` (the body's SHA-256 must equal `watch_value`, 64 lowercase hex digits, `watch_path` empty) or `json_eq` (the field at `watch_path`, dot-separated names or list positions, must read exactly as `watch_value`: a string as it is, `true`, `false`, `null`, a number as JSON writes it).
+- The url must be https, at most 300 characters, a public domain name, with no credentials or port. The watch is fixed at funding and shown by `get_order`, so a recipient can read it before relying on the order.
+- **The validator vote.** The leader fetches the page and proposes whether the condition holds; every other validator fetches it again on its own and accepts only the same answer. A leader that says "met" for a page that does not satisfy the condition is voted down, and a page nobody can read records nothing. This is the one nondeterministic step in the contract, and it can only record a release that was already spelled out at `fund`. It never pays: `settle` is the only function that sends money.
+- `observe` works while the order is open, up to and including the deadline, at most once every 5 minutes per order. After the deadline only the payer's `reclaim` works, so the two never race.
+- What it cannot do: tell whether the page is true. It proves what independent validators read at an address and that they agreed.
 
 ### Known limit you must design for
 
@@ -60,11 +88,12 @@ What it **cannot** do: it cannot tell whether the releaser is right. Whoever fun
 | Test type | Command | What it covers |
 |---|---|---|
 | Lint | `genvm-lint check contracts/quay.py` | static checks |
-| Direct | `python -m pytest tests/direct/ -v` | 36 in-memory tests: every entry point, every refusal, every boundary, random sequences that must always settle to exactly what was funded |
-| Live | `QUAY=0x... node scripts/e2e.mjs` | the Bradbury run described below, with separate payer, releaser and recipient wallets |
-| Mutation | `python scripts/mutate.py` | breaks the contract 77 ways, one at a time, and checks a test notices |
+| Direct | `python -m pytest tests/direct/ -v` | 152 in-memory tests: every entry point, every refusal, every boundary, random sequences that must always settle to exactly what was funded, and (`test_quay_observe.py`) the watch terms, the page matching rules, the rate limit, the deadline window and the validator vote with forged and malformed leader results |
+| Live, v1 | `QUAY=0x... node scripts/e2e.mjs` | the Bradbury run described below, with separate payer, releaser and recipient wallets |
+| Live, v2 | `NETWORK=studionet QUAY=0x... node scripts/e2e-observe.mjs` | the Studionet run of the watched orders described below, against real pages |
+| Mutation | `python scripts/mutate.py` | breaks the contract 157 ways, one at a time, and checks a test notices |
 
-Mutation result: 75 of 77 breakages are caught. Two survive and are explained. The check that the legs add up to the order total at decision time cannot be reached by any input (the legs are built from amounts that `fund` already checked), so it stays as a second line of defense. Dropping the check that a page size is at least one changes nothing, because a page of zero ids is empty either way.
+Mutation result: 155 of 157 breakages are caught. Two survive and are explained. The check that the legs add up to the order total at decision time cannot be reached by any input (the legs are built from amounts that `fund` already checked), so it stays as a second line of defense. Dropping the check that a page size is at least one changes nothing, because a page of zero ids is empty either way. (The 157 include 81 on the watch: its terms, the url rules, the page matching, the validator vote and `observe`. A first pass left several url and page-matching mutants alive; each was closed with a test that refuses it for its own reason.)
 
 <!--LIVE_START-->
 ## Live evidence (Bradbury, run `v1`, 2026-10-20)
@@ -141,11 +170,94 @@ A note on honesty about the run itself: the first attempt stopped part way becau
 
 <!--LIVE_END-->
 
+<!--OBSERVE_START-->
+## Live evidence, version 2 (Studionet, run `studio2`, 2026-10-23)
+
+Quay v2 `0x1678e8C242AB557ACF772e17aE715EC80Eac1d39` on Studionet. Separate wallets for the payer, the named releaser and the recipients; the recipients never send a transaction, so their balance changes are exact. Every claim is read back from the chain by `scripts/e2e-observe.mjs`, which fails the run if it is not exactly as expected, and the pages are real: the jq 1.7.1 source tarball on GitHub, and a JSON page in this repository (`docs/watch-demo.json`) that the run changes mid-order. Studionet finalizes in under a minute, so every transfer landed within a minute of its `settle`.
+
+### Digest: the validators read a real file and release the order
+
+| # | Call | Transaction | Result |
+|---|---|---|---|
+| 1 | `fund_watched` | [`0x8931f7ea17`](https://explorer-studio.genlayer.com/tx/0x8931f7ea1712e38ce46944b209fe75dfa161aaddcb6a0b3c649d71eb6a7cd0ea) | accepted |
+| 2 | `observe (anyone)` | [`0x143c63a3a2`](https://explorer-studio.genlayer.com/tx/0x143c63a3a2f03498f3d353b32d0806db4c624acd6e7805436330270fd2b6b85a) | accepted |
+| 3 | `observe again` | [`0xcdbd9bfce8`](https://explorer-studio.genlayer.com/tx/0xcdbd9bfce877f44e12efd3fb4ae51e8359f471e88ecbac766aeafddd18a77ec3) | refused by the contract: "Not open (status: decided)" |
+| 4 | `settle` | [`0x6fdfaed3f0`](https://explorer-studio.genlayer.com/tx/0x6fdfaed3f079c86e61f8d78e348ab8e7d0b10fa6e8f8b84dd0eb51d2715ebb8e) | accepted |
+| 5 | `settle again` | [`0xc5d6169cab`](https://explorer-studio.genlayer.com/tx/0xc5d6169cab7f9f14d429b2f5dc8e372ddd807e7cb907cd2763b5c5a57bfb6872) | refused by the contract: "No outcome to settle (status: settled)" |
+
+The order watched the real jq 1.7.1 tarball for its published SHA-256 (`478c9ca1...ee580c2`). `observe` was called by the payer, who is neither the releaser nor a recipient: the validators fetched the file, agreed the digest matched, and the order was decided as a release (`observed`) after 1 observation. Both recipients' balances were unchanged at the decision, a second `observe` was refused (`Not open`), `settle` then paid recipient A 0.001500 and recipient B 0.000500 GEN exactly, and a second `settle` was refused.
+
+### Unmet: the watch is not satisfied, the order stays open, and the releaser can still refund
+
+| # | Call | Transaction | Result |
+|---|---|---|---|
+| 1 | `fund_watched` | [`0xf6a09097bc`](https://explorer-studio.genlayer.com/tx/0xf6a09097bc7d71c05266a9e66df577933352094db80c6cdcbd9660ff8d4d19de) | accepted |
+| 2 | `observe` | [`0x32fe07a6a6`](https://explorer-studio.genlayer.com/tx/0x32fe07a6a69cf738db57e823d449364492f1a5a940c8ebbe184c6f7778d40c9b) | accepted |
+| 3 | `observe again at once` | [`0xd42ae1f500`](https://explorer-studio.genlayer.com/tx/0xd42ae1f500243364b9deff0e4e001e16fe536e8bebef2925d27e133b2459e4c7) | refused by the contract: "Observed too recently, try again later" |
+| 4 | `refund (the named releaser)` | [`0xf654f72019`](https://explorer-studio.genlayer.com/tx/0xf654f7201975e3e2b636e76459743067bd217296a66ccacac54a6d0da46a3b2a) | accepted |
+| 5 | `settle` | [`0x306fa68974`](https://explorer-studio.genlayer.com/tx/0x306fa689745854c019605503ff4c12be95a26ee74e90227c824c89b21dda32b0) | accepted |
+
+The order watched the same file for a digest that is not its digest. The validators agreed the condition is not met, so the order stayed open with 1 observation recorded. A second `observe` straight away was refused as too recent. The named releaser then refunded and `settle` paid the payer back 0.002000 GEN, exactly.
+
+### Flip: an order released when a page changes
+
+| # | Call | Transaction | Result |
+|---|---|---|---|
+| 1 | `fund_watched` | [`0x410d5bba21`](https://explorer-studio.genlayer.com/tx/0x410d5bba21e34d6349fda5485eb443aaf3ffd8afa21f252335777c25b4c73e57) | accepted |
+| 2 | `observe while the page says pending` | [`0x1f94bf7920`](https://explorer-studio.genlayer.com/tx/0x1f94bf792013ee111c721fd3561097dcc7fe97254571b113c4715c52891aa23a) | accepted |
+| 3 | `observe #2 after the change` | [`0xdbb984f097`](https://explorer-studio.genlayer.com/tx/0xdbb984f097b373f8ff3641ee0264ce2efc621d5bae4c19695feaa49da59207cd) | accepted |
+| 4 | `settle` | [`0x3cc2b24b69`](https://explorer-studio.genlayer.com/tx/0x3cc2b24b6965e4f0cb051e013445836b8581a693549d8797208de104d2386577) | accepted |
+
+The order watched the `status` field of `docs/watch-demo.json` for `delivered`. While the page said `pending`, `observe` left the order open. The page was then changed to `delivered` (a commit to this repository, served by raw.githubusercontent.com), and after the cooldown the next `observe` had the validators agree on the new value and decide the order as a release (`observed`, 2 observations in all). `settle` paid recipients A and B exactly.
+
+### Unreadable: a page that does not exist records nothing
+
+| # | Call | Transaction | Result |
+|---|---|---|---|
+| 1 | `fund_watched` | [`0xd5babc713d`](https://explorer-studio.genlayer.com/tx/0xd5babc713d8edfb2522f3fade799eddd4eab9ccd0bd765f2c1d905e844e0b1d9) | accepted |
+| 2 | `observe` | [`0x5473f44aec`](https://explorer-studio.genlayer.com/tx/0x5473f44aec9a4ae9fcc53305e160864ae053ec201d6a72d31dcdfbd3df30beaa) | refused by the contract: "Page unreadable, nothing recorded. Try again shortly." |
+| 3 | `refund (so nothing stays locked)` | [`0x223df96ec7`](https://explorer-studio.genlayer.com/tx/0x223df96ec7f714770a119392eec89cf718b58a62ac7a6d4574cf45a53a376116) | accepted |
+| 4 | `settle` | [`0xfecd18e8ef`](https://explorer-studio.genlayer.com/tx/0xfecd18e8ef2ac1f17c64a63e780e1159c78675db0ad3caf50d5101c02a17bb43) | accepted |
+
+`observe` on a page that returns 404 was refused (`Page unreadable, nothing recorded`) and left the order as it was: no observation counted, nothing decided, no cooldown started. The releaser then refunded so nothing stays locked.
+
+### Deadline: after it, observe is refused even though the page matches, and the payer reclaims
+
+| # | Call | Transaction | Result |
+|---|---|---|---|
+| 1 | `fund_watched` | [`0xf7b66edb31`](https://explorer-studio.genlayer.com/tx/0xf7b66edb315f9b99770e4a028cf4a0af9938c79f12a4522c392a21c030fb688f) | accepted |
+| 2 | `observe after the deadline` | [`0x0161f0e7c3`](https://explorer-studio.genlayer.com/tx/0x0161f0e7c3ddd42329ddf073050ecd2a2cecab042184ab94994b51379f3f0640) | refused by the contract: "The deadline has passed" |
+| 3 | `reclaim (the payer)` | [`0xe94f2aee90`](https://explorer-studio.genlayer.com/tx/0xe94f2aee90cfb201c9377b521a45f508eaad821711ceb57889ea18dfed2af0c3) | accepted |
+| 4 | `settle` | [`0xb265a683c8`](https://explorer-studio.genlayer.com/tx/0xb265a683c8915ac3f4c833c7e5bc29ef0086ab27fb733ae3f26928a7b4d47a9a) | accepted |
+
+The order watched a page that matched, but nobody observed before the deadline (the shortest allowed, one hour). After it, `observe` was refused (`The deadline has passed`), the payer's `reclaim` recorded the refund (`deadline`) and `settle` paid it back. `observe` and `reclaim` never overlap.
+
+### Final accounting
+
+```
+{
+ "balance": 0,
+ "in_flight": 0,
+ "shortfall": 0,
+ "total_received": "9400000000000000",
+ "total_scheduled": "9400000000000000",
+ "unscheduled": 0
+}
+```
+
+`total_received` (9400000000000000) against `total_scheduled` (9400000000000000); the contract's own `get_accounting` after the run, with nothing short (`shortfall` 0) and nothing in flight (`in_flight` 0). The full event log, with every transaction hash, is `scripts/e2e-observe-log-studio2.json`.
+
+### About the runs
+
+This is the second full run. The first (`studio1`, log `scripts/e2e-observe-log-studio1.json`, kept) passed the digest, unmet, unreadable and deadline scenarios, and its flip scenario also decided, settled and paid correctly, but the script then reported a failure: it compared the recipients' balances against a starting figure taken before the digest scenario, which runs side by side and pays the same two wallets, so the figure was wrong. That was a mistake in the script's check, not in the contract. The digest and flip orders now pay fresh addresses that nothing else uses, and the script waits for every scheduled transfer to leave the contract before it reads the accounting. The accounting above covers both runs: every wei received by any order in either run was scheduled out exactly once.
+<!--OBSERVE_END-->
+
 ## Layout
 
 - `contracts/quay.py`
-- `tests/direct/test_quay.py`
-- `scripts/deploy.mjs` deploys with a testnet wallet kept outside the repo, `scripts/e2e.mjs` is the live run, `scripts/mutate.py` the mutation check
+- `tests/direct/test_quay.py`, `tests/direct/test_quay_observe.py`
+- `scripts/deploy.mjs` deploys with a testnet wallet kept outside the repo (`NETWORK=studionet` for Studionet), `scripts/e2e.mjs` is the v1 live run, `scripts/e2e-observe.mjs` the v2 live run, `scripts/mutate.py` the mutation check
+- `docs/watch-demo.json` is a page this repo controls, used by the live run to show an order released when a page changes
 - `docs/ARCHITECTURE.md` the design and the threat table
 
 ## License
